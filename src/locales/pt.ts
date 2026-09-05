@@ -46,6 +46,7 @@ const pt = {
 	unitMinutes: "minutos",
 	unitHours: "horas",
 	unitDays: "dias",
+	thresholdDesc: (example: string, unit: string) => `${example}. Unidade do limite: ${unit}`,
 
 	todayTimeOnlyName: "4. Hoje: mostrar só a hora",
 	todayTimeOnlyDesc:

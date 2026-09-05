@@ -51,6 +51,7 @@ const en = {
 	unitMinutes: "minutes",
 	unitHours: "hours",
 	unitDays: "days",
+	thresholdDesc: (example: string, unit: string) => `${example}. Threshold unit: ${unit}`,
 
 	todayTimeOnlyName: "4. Today: show time only",
 	todayTimeOnlyDesc:

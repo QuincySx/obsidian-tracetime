@@ -1,24 +1,13 @@
 import { App, Notice, PluginSettingTab, Setting, TextComponent } from "obsidian";
 import type TraceTimePlugin from "./main";
 import { DEFAULT_SETTINGS, formatTimestamp, renderDateFormat, TraceTimeSettings } from "./format";
+import { t } from "./locales";
 
 export { DEFAULT_SETTINGS };
 export type { TraceTimeSettings };
 
-/** “完整日期格式”的预设项：下拉框里直接渲染成实际效果，不用看懂占位符 */
-const DATE_FORMAT_PRESETS = [
-	"YYYY-MM-DD HH:mm",
-	"YY-MM-DD HH:mm",
-	"MM-DD HH:mm",
-	"M月D日 HH:mm",
-	"M月D日",
-	"M月第W周 HH:mm",
-	"M月第W周",
-	"HH:mm MM/DD YY",
-	"HH:mm MM-DD",
-	"HH:mm M/D",
-	"HH:mm M月D日",
-];
+/** Presets for "full date format": the dropdown renders the actual result, no need to decode placeholders */
+const DATE_FORMAT_PRESETS = t.dateFormatPresets;
 const CUSTOM_FORMAT = "__custom__";
 
 function parseNonNegativeInt(value: string, fallback: number): number {
@@ -31,51 +20,52 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 		super(app, plugin);
 	}
 
-	display(): void {
+		display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 		const settings = this.plugin.settings;
 
-		// 实时预览：一组不同年龄样本按当前规则渲染，改任何选项立即刷新
+		// Live preview: a set of samples at different ages, rendered with the
+		// current rules; refreshes immediately on any option change.
 		const previewEl = containerEl.createDiv({ cls: "tracetime-settings-preview" });
 		const updatePreview = () => this.renderPreview(previewEl);
 		updatePreview();
 
 		new Setting(containerEl)
-			.setName("显示规则")
-			.setDesc("按从上到下的顺序匹配，命中即停；关闭某档会落到下一档，最后由完整日期格式兜底。")
+			.setName(t.displayRulesName)
+			.setDesc(t.displayRulesDesc)
 			.setHeading();
 
-		this.addThresholdRung(containerEl, updatePreview, {
-			name: "1. 刚刚",
-			example: "例：2 分钟前编辑的块 → 刚刚",
-			unit: "分钟",
+				this.addThresholdRung(containerEl, updatePreview, {
+			name: t.rung1Name,
+			example: t.rung1Example,
+			unit: t.unitMinutes,
 			get: () => settings.justNowMinutes,
 			fallback: DEFAULT_SETTINGS.justNowMinutes,
 			set: (v) => (settings.justNowMinutes = v),
 		});
 
 		this.addThresholdRung(containerEl, updatePreview, {
-			name: "2. N 分钟前",
-			example: "例：45 分钟前编辑的块 → 45 分钟前",
-			unit: "分钟",
+			name: t.rung2Name,
+			example: t.rung2Example,
+			unit: t.unitMinutes,
 			get: () => settings.minutesAgoLimit,
 			fallback: DEFAULT_SETTINGS.minutesAgoLimit,
 			set: (v) => (settings.minutesAgoLimit = v),
 		});
 
 		this.addThresholdRung(containerEl, updatePreview, {
-			name: "3. N 小时前",
-			example: "例：3 小时前编辑的块 → 3 小时前（想在今天显示几点几分就关掉这档、打开下一档）",
-			unit: "小时",
+			name: t.rung3Name,
+			example: t.rung3Example,
+			unit: t.unitHours,
 			get: () => settings.hoursAgoLimit,
 			fallback: DEFAULT_SETTINGS.hoursAgoLimit,
 			set: (v) => (settings.hoursAgoLimit = v),
 		});
 
-		new Setting(containerEl)
-			.setName("4. 今天只显示时间")
-			.setDesc("今天编辑的块显示「14:35」。和上一档互斥：都开时“N 小时前”优先")
+				new Setting(containerEl)
+			.setName(t.todayTimeOnlyName)
+			.setDesc(t.todayTimeOnlyDesc)
 			.addToggle((toggle) =>
 				toggle.setValue(settings.todayTimeOnly).onChange(async (value) => {
 					settings.todayTimeOnly = value;
@@ -85,8 +75,8 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("5. 昨天显示“昨天 HH:mm”")
-			.setDesc("昨天编辑的块显示「昨天 18:05」")
+			.setName(t.yesterdayName)
+			.setDesc(t.yesterdayDesc)
 			.addToggle((toggle) =>
 				toggle.setValue(settings.yesterdayWithTime).onChange(async (value) => {
 					settings.yesterdayWithTime = value;
@@ -96,17 +86,17 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 			);
 
 		this.addThresholdRung(containerEl, updatePreview, {
-			name: "6. N 天前",
-			example: "例：5 天前编辑的块 → 5 天前",
-			unit: "天",
+			name: t.rung6Name,
+			example: t.rung6Example,
+			unit: t.unitDays,
 			get: () => settings.daysAgoLimit,
 			fallback: 30,
 			set: (v) => (settings.daysAgoLimit = v),
 		});
 
 		new Setting(containerEl)
-			.setName("7. 今年显示“MM-DD”")
-			.setDesc("今年更早的块显示「03-08」，跨年走完整格式")
+			.setName(t.thisYearName)
+			.setDesc(t.thisYearDesc)
 			.addToggle((toggle) =>
 				toggle.setValue(settings.thisYearShort).onChange(async (value) => {
 					settings.thisYearShort = value;
@@ -115,9 +105,9 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 				})
 			);
 
-		new Setting(containerEl)
-			.setName("标签字号")
-			.setDesc("时间标签的字号（px），默认比正文小一点")
+				new Setting(containerEl)
+			.setName(t.fontSizeName)
+			.setDesc(t.fontSizeDesc)
 			.addSlider((slider) =>
 				slider
 					.setLimits(9, 20, 1)
@@ -130,13 +120,13 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("标签垂直位置")
-			.setDesc("时间标签显示在块的哪个高度：首行/末行是该行的行内居中，中间是整个块的垂直居中")
+			.setName(t.labelVerticalName)
+			.setDesc(t.labelVerticalDesc)
 			.addDropdown((drop) =>
 				drop
-					.addOption("start", "块首行")
-					.addOption("middle", "块中间")
-					.addOption("end", "块末行")
+					.addOption("start", t.optionBlockStart)
+					.addOption("middle", t.optionBlockMiddle)
+					.addOption("end", t.optionBlockEnd)
 					.setValue(settings.labelVertical)
 					.onChange(async (value) => {
 						settings.labelVertical = value as TraceTimeSettings["labelVertical"];
@@ -145,8 +135,8 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("紧凑模式")
-			.setDesc("关闭「限制行宽」时，标签收起为右缘的小圆点，鼠标悬停才展开完整时间；开启「限制行宽」时始终完整显示")
+			.setName(t.compactModeName)
+			.setDesc(t.compactModeDesc)
 			.addToggle((toggle) =>
 				toggle.setValue(settings.compactLabels).onChange(async (value) => {
 					settings.compactLabels = value;
@@ -154,16 +144,16 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 				})
 			);
 
-		const formatNow = new Date();
+				const formatNow = new Date();
 		const isCustomFormat = !DATE_FORMAT_PRESETS.includes(settings.dateFormat);
 
 		let customFormatSetting: Setting;
 		new Setting(containerEl)
-			.setName("完整日期格式")
-			.setDesc("以上档位都没命中时的兜底显示，选项就是实际效果")
+			.setName(t.fullDateFormatName)
+			.setDesc(t.fullDateFormatDesc)
 			.addDropdown((drop) => {
 				for (const p of DATE_FORMAT_PRESETS) drop.addOption(p, renderDateFormat(p, formatNow));
-				drop.addOption(CUSTOM_FORMAT, "自定义…");
+				drop.addOption(CUSTOM_FORMAT, t.customOption);
 				drop.setValue(isCustomFormat ? CUSTOM_FORMAT : settings.dateFormat).onChange(async (value) => {
 					if (value === CUSTOM_FORMAT) {
 						customFormatSetting.settingEl.show();
@@ -177,11 +167,8 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 			});
 
 		customFormatSetting = new Setting(containerEl)
-			.setName("自定义格式")
-			.setDesc(
-				"占位符：YYYY=4位年 YY=2位年 MM=月 M=月不补零 DD=日 D=日不补零 HH=时 mm=分 W=当月第几周。" +
-					"例：M月D日 → 7月22日；M月第W周 → 7月第4周"
-			)
+			.setName(t.customFormatName)
+			.setDesc(t.customFormatDesc)
 			.addText((text) =>
 				text
 					.setPlaceholder(DEFAULT_SETTINGS.dateFormat)
@@ -194,20 +181,18 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 			);
 		if (!isCustomFormat) customFormatSetting.settingEl.hide();
 
-		new Setting(containerEl)
-			.setName("回滚时间戳")
-			.setDesc(
-				"每次写入前都会自动留一份上一代备份。时间戳被误刷后，可用当前打开文件的备份恢复；回滚本身也会留档，可再次滚回。"
-			)
+				new Setting(containerEl)
+			.setName(t.rollbackName)
+			.setDesc(t.rollbackDesc)
 			.addButton((button) =>
-				button.setButtonText("恢复当前文件的备份").onClick(async () => {
+				button.setButtonText(t.rollbackButton).onClick(async () => {
 					const file = this.app.workspace.getActiveFile();
 					if (!file || file.extension !== "md") {
-						new Notice("TraceTime: 请先打开一个 Markdown 文件");
+						new Notice(t.noticeOpenFileFirst);
 						return;
 					}
 					const ok = await this.plugin.tracker.restoreFromBackup(file);
-					new Notice(ok ? "TraceTime: 已从备份恢复时间戳" : "TraceTime: 该文件没有可用备份");
+					new Notice(ok ? t.noticeRestored : t.noticeNoBackup);
 				})
 			);
 	}
@@ -228,7 +213,7 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 		let textInput: TextComponent;
 		new Setting(containerEl)
 			.setName(rung.name)
-			.setDesc(`${rung.example}。阈值单位：${rung.unit}`)
+			.setDesc(t.thresholdDesc(rung.example, rung.unit))
 			.addText((text) => {
 				textInput = text;
 				text
@@ -251,21 +236,21 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 			);
 	}
 
-	private renderPreview(el: HTMLElement): void {
+		private renderPreview(el: HTMLElement): void {
 		el.empty();
-		el.createDiv({ cls: "tracetime-preview-title", text: "实时预览" });
+		el.createDiv({ cls: "tracetime-preview-title", text: t.previewTitle });
 		const now = new Date();
 		const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 18, 0);
 		const samples: [string, Date][] = [
-			["30 秒前编辑", new Date(now.getTime() - 30 * 1000)],
-			["2 分钟前编辑", new Date(now.getTime() - 2 * 60000)],
-			["45 分钟前编辑", new Date(now.getTime() - 45 * 60000)],
-			["3 小时前编辑", new Date(now.getTime() - 3 * 3600000)],
-			["10 小时前编辑", new Date(now.getTime() - 10 * 3600000)],
-			["昨天 18:00 编辑", yesterday],
-			["5 天前编辑", new Date(now.getTime() - 5 * 86400000)],
-			["40 天前编辑", new Date(now.getTime() - 40 * 86400000)],
-			["200 天前编辑", new Date(now.getTime() - 200 * 86400000)],
+			[t.previewSeconds(30), new Date(now.getTime() - 30 * 1000)],
+			[t.previewMinutes(2), new Date(now.getTime() - 2 * 60000)],
+			[t.previewMinutes(45), new Date(now.getTime() - 45 * 60000)],
+			[t.previewHours(3), new Date(now.getTime() - 3 * 3600000)],
+			[t.previewHours(10), new Date(now.getTime() - 10 * 3600000)],
+			[t.previewYesterday("18:00"), yesterday],
+			[t.previewDays(5), new Date(now.getTime() - 5 * 86400000)],
+			[t.previewDays(40), new Date(now.getTime() - 40 * 86400000)],
+			[t.previewDays(200), new Date(now.getTime() - 200 * 86400000)],
 		];
 		for (const [label, at] of samples) {
 			const row = el.createDiv({ cls: "tracetime-preview-row" });

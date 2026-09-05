@@ -44,6 +44,7 @@ const zh = {
 	unitMinutes: "分钟",
 	unitHours: "小时",
 	unitDays: "天",
+	thresholdDesc: (example: string, unit: string) => `${example}。阈值单位：${unit}`,
 
 	todayTimeOnlyName: "4. 今天只显示时间",
 	todayTimeOnlyDesc: "今天编辑的块显示「14:35」。和上一档互斥：都开时“N 小时前”优先",
