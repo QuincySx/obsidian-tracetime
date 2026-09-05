@@ -7,7 +7,7 @@ export const monthNamesShort = [
 
 const pt = {
 	// --- Output labels (shown on every note, from format.ts) ---
-	justNow: "Agora mesmo",
+	justNow: "Agora",
 	minutesAgo: (n: number) => `${n} minuto${n === 1 ? "" : "s"} atrás`,
 	hoursAgo: (n: number) => `${n} hora${n === 1 ? "" : "s"} atrás`,
 	yesterdayAt: (time: string) => `Ontem ${time}`,

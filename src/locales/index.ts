@@ -1,4 +1,5 @@
 // src/locales/index.ts
+import { moment } from "obsidian";
 import en, { monthNamesShort as monthNamesEn } from "./en";
 import zh, { monthNamesShort as monthNamesZh } from "./zh";
 import pt, { monthNamesShort as monthNamesPt } from "./pt";
@@ -16,8 +17,8 @@ const monthNames: Record<string, string[]> = {
 
 /** Pega o idioma configurado no Obsidian e resolve pra uma chave suportada. */
 function resolveLocale(): string {
-	// window.moment vem do Obsidian; "pt-br" -> "pt", "zh-cn" -> "zh"
-	const raw: string = (window as any).moment?.locale?.() ?? "en";
+	// moment.locale() sem argumento retorna o idioma ativo, ex: "pt-br", "zh-cn"
+	const raw = moment.locale();
 	const short = raw.split("-")[0];
 	return locales[short] ? short : "en";
 }
