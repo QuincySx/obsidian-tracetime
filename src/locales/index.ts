@@ -1,31 +1,26 @@
 // src/locales/index.ts
 import { moment } from "obsidian";
-import en, { monthNamesShort as monthNamesEn } from "./en";
-import zh, { monthNamesShort as monthNamesZh } from "./zh";
-import pt, { monthNamesShort as monthNamesPt } from "./pt";
+import { locales, monthNames, Locale } from "./registry";
 
-// Cada entrada é "Partial" porque um idioma novo pode não ter todas as
-// chaves ainda — o fallback pro "en" cobre o que faltar.
-type Locale = typeof en;
-
-const locales: Record<string, Partial<Locale>> = { en, zh, pt };
-const monthNames: Record<string, string[]> = {
-	en: monthNamesEn,
-	zh: monthNamesZh,
-	pt: monthNamesPt,
-};
-
-/** Pega o idioma configurado no Obsidian e resolve pra uma chave suportada. */
+/**
+ * Pega o idioma configurado no Obsidian e resolve pra uma chave suportada.
+ * moment.locale() devolve algo como "pt-br" ou "zh-cn" (sempre minúsculo).
+ * Tenta primeiro a chave completa com região normalizada (ex: "pt-BR");
+ * se não achar, cai pro idioma "puro" (ex: "zh"); se nem isso, usa "en".
+ */
 function resolveLocale(): string {
-	// moment.locale() sem argumento retorna o idioma ativo, ex: "pt-br", "zh-cn"
 	const raw = moment.locale();
-	const short = raw.split("-")[0];
-	return locales[short] ? short : "en";
+	const [lang, region] = raw.split("-");
+	const withRegion = region ? `${lang}-${region.toUpperCase()}` : undefined;
+
+	if (withRegion && locales[withRegion]) return withRegion;
+	if (locales[lang]) return lang;
+	return "en";
 }
 
 const activeLocale = resolveLocale();
 
 // Fallback automático: começa com "en" completo, sobrescreve só com o que
 // o idioma ativo realmente define.
-export const t: Locale = { ...en, ...locales[activeLocale] };
+export const t: Locale = { ...locales.en, ...locales[activeLocale] } as Locale;
 export const activeMonthNames: string[] = monthNames[activeLocale] ?? monthNames.en;

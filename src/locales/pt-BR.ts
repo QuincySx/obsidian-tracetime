@@ -5,7 +5,7 @@ export const monthNamesShort = [
 	"jul", "ago", "set", "out", "nov", "dez",
 ];
 
-const pt = {
+const ptBR = {
 	// --- Output labels (shown on every note, from format.ts) ---
 	justNow: "Agora",
 	minutesAgo: (n: number) => `${n} minuto${n === 1 ? "" : "s"} atrás`,
@@ -46,7 +46,7 @@ const pt = {
 	unitMinutes: "minutos",
 	unitHours: "horas",
 	unitDays: "dias",
-	thresholdDesc: (example: string, unit: string) => `${example}. Unidade do limite: ${unit}`,
+	thresholdDesc: (example: string, unit: string) => `${example}. Unidade: ${unit}`,
 
 	todayTimeOnlyName: "4. Hoje: mostrar só a hora",
 	todayTimeOnlyDesc:
@@ -96,4 +96,4 @@ const pt = {
 	previewDays: (n: number) => `Editado há ${n} dia${n === 1 ? "" : "s"}`,
 };
 
-export default pt;
+export default ptBR;

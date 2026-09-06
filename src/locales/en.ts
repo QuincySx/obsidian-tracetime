@@ -37,14 +37,11 @@ const en = {
 
 	rung1Name: "1. Just now",
     rung1Example: "e.g.: a block edited 2 minutes ago → Just now",
-
     rung2Name: "2. N minutes ago",
     rung2Example: "e.g.: a block edited 45 minutes ago → 45 minutes ago",
-    
     rung3Name: "3. N hours ago",
     rung3Example:
-    "e.g.: a block edited 3 hours ago → 3 hours ago (to show today's exact time instead, disable this tier and enable the next one)",
-    
+    	"e.g.: a block edited 3 hours ago → 3 hours ago (to show today's exact time instead, disable this tier and enable the next one)",
     rung6Name: "6. N days ago",
     rung6Example: "e.g.: a block edited 5 days ago → 5 days ago",
 
@@ -69,9 +66,9 @@ const en = {
 	labelVerticalName: "Label vertical position",
 	labelVerticalDesc:
 		"Height at which the time label sits within the block: first/last line centers inline with that line; middle centers vertically across the whole block.",
-	optionBlockStart: "Block's first line",
-	optionBlockMiddle: "Block's middle",
-	optionBlockEnd: "Block's last line",
+	optionBlockStart: "Block's first line (or paragraph)",
+	optionBlockMiddle: "Block's middle (or paragraph)",
+	optionBlockEnd: "Block's last line (or paragraph)",
 
 	compactModeName: "Compact mode",
 	compactModeDesc:
@@ -87,7 +84,7 @@ const en = {
 
 	rollbackName: "Restore timestamps",
 	rollbackDesc:
-		"A backup of the previous generation is kept automatically before every write. If timestamps get corrupted, restore them from the currently open file's backup; the restore itself is backed up too, so you can roll back again.",
+  		"A backup of the previous generation is kept automatically before every write. If a timestamp gets overwritten by mistake, restore it from the currently open file's backup; the restore itself is backed up too, so you can roll back again.",
 	rollbackButton: "Restore backup for current file",
 	noticeOpenFileFirst: "TraceTime: please open a Markdown file first",
 	noticeRestored: "TraceTime: timestamps restored from backup",
