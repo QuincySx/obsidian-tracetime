@@ -5,7 +5,7 @@
 
 import en, { monthNamesShort as monthNamesEn } from "./en";
 import zh, { monthNamesShort as monthNamesZh } from "./zh";
-import ptBR, { monthNamesShort as monthNamesPt } from "./pt-BR";
+import ptBR, { monthNamesShort as monthNamesPtbr } from "./pt-BR";
 
 // "Partial" porque um idioma novo pode não ter todas as chaves ainda —
 // o fallback pro "en" cobre o que faltar.
@@ -21,6 +21,6 @@ export const locales: Record<string, Partial<Locale>> = {
 export const monthNames: Record<string, string[]> = {
 	en: monthNamesEn,
 	zh: monthNamesZh,
-	"pt-BR": monthNamesPt,
-    pt: monthNamesPt
+	"pt-BR": monthNamesPtbr,
+    pt: monthNamesPtbr
 };

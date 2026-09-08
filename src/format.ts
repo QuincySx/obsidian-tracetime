@@ -47,11 +47,6 @@ function pad2(n: number): string {
 }
 
 /**
- * 按格式串渲染日期。占位符：
- * YYYY=4 位年  YY=2 位年  MM=月  M=月(不补零)  DD=日  D=日(不补零)
- * HH=时  mm=分  W=当月第几周（1-7 日 = 第 1 周，依此类推）
- */
-/**
  * Renders a date using a format string. Placeholders:
  * YYYY=4-digit year  YY=2-digit year  MM=month  M=month (no leading zero)
  * DD=day  D=day (no leading zero)  HH=hour  mm=minute  MMM=short month name

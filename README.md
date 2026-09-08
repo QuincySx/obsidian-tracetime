@@ -10,6 +10,7 @@ TraceTime is an Obsidian plugin that tracks and displays the **last edited time 
 - **Configurable display rules**: a ladder of formats (just now → minutes ago → hours ago → today → yesterday → days ago → this year → full date) with a live-preview settings tab
 - **Timestamp rollback**: every write keeps a one-generation backup; restore from the settings tab if timestamps ever get clobbered
 - **Performance first**: millisecond incremental path, viewport-only rendering, debounced batched writes, no full-vault scan on startup
+- **Multi-language UI**: settings and labels available in English, 中文, and Português (BR), auto-detected from Obsidian's language setting (falls back to English)
 
 ## Data storage
 
@@ -49,6 +50,7 @@ TraceTime 是一个 Obsidian 插件：为笔记中的**每个块**（段落、�
 - **可配置的显示规则**：阶梯式规则（刚刚 → N 分钟前 → N 小时前 → 今天 → 昨天 → N 天前 → 今年 → 完整日期），设置页带实时预览
 - **时间戳回滚**：每次写入前自动保留上一代备份，误刷后可在设置页一键恢复
 - **性能优先**：毫秒级增量路径、视口内渲染、防抖批量落盘、启动不扫描全库
+- **多语言界面**：设置页和标签支持英文、中文、葡萄牙语（巴西），根据 Obsidian 的语言设置自动选择（未识别时回退到英文）
 
 ## 数据存储
 
@@ -57,3 +59,17 @@ TraceTime 是一个 Obsidian 插件：为笔记中的**每个块**（段落、�
 ## License
 
 MIT
+
+
+## Localization
+
+The localization system supports adding new languages through the locale files in `src/locales/`.
+Locale files use BCP 47 language tags when a regional variant is relevant (for example, `pt-BR` or `es-ES`). The locale key, file name, and runtime identifier must match exactly.
+For instructions on adding a new language, see [`src/locales/README.md`](src/locales/README.md).
+
+
+本地化
+
+本地化系统支持通过 `src/locales/` 中的语言环境文件添加新语言。
+当需要使用区域变体时，语言环境文件应使用 BCP 47 语言标签（例如 `pt-BR` 或 `es-ES`）。语言环境键、文件名和运行时标识符必须完全一致。
+有关如何添加新语言的说明，请参阅 [`src/locales/README.md`](src/locales/README.md)。
