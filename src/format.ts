@@ -66,7 +66,7 @@ export function renderDateFormat(format: string, d: Date): string {
 		mm: pad2(d.getMinutes()),
 		W: String(Math.ceil(d.getDate() / 7)),
 	};
-	return format.replace(/'([^']*)'|MMM|YYYY|YY|MM|M|DD|D|HH|mm|W/g, (match, literal) => {
+	return format.replace(/'([^']*)'|MMM|YYYY|YY|MM|M|DD|D|HH|mm|W/g, (match, literal: string | undefined) => {
 		if (literal !== undefined) return literal;
 		return tokens[match];
 	});

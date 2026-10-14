@@ -147,7 +147,6 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 				const formatNow = new Date();
 		const isCustomFormat = !DATE_FORMAT_PRESETS.includes(settings.dateFormat);
 
-		let customFormatSetting: Setting;
 		new Setting(containerEl)
 			.setName(t.fullDateFormatName)
 			.setDesc(t.fullDateFormatDesc)
@@ -166,7 +165,7 @@ export class TraceTimeSettingTab extends PluginSettingTab {
 				});
 			});
 
-		customFormatSetting = new Setting(containerEl)
+		const customFormatSetting = new Setting(containerEl)
 			.setName(t.customFormatName)
 			.setDesc(t.customFormatDesc)
 			.addText((text) =>

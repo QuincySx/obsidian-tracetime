@@ -1,4 +1,4 @@
-// 一次性自检测试：node_modules/.bin/esbuild test/selftest.ts --bundle --platform=node --format=cjs --target=es2020 --outfile=test/selftest.cjs && node test/selftest.cjs
+// npm test runs these existing regressions with Obsidian's locale fixed to zh-cn.
 import { hashText, xxhash64 } from "../src/hash";
 import { parseBlocks, makeBlockId, BlockType } from "../src/blocks";
 import { BlockIndex, HISTORY_CAP, BlockTimes, reconcileBlocks, seedHistory } from "../src/blockIndex";
