@@ -1,3 +1,4 @@
+import { t, activeMonthNames } from "./locales";
 export interface TraceTimeSettings {
 	/** 档位 1：多少分钟内显示“刚刚”，0 = 关闭 */
 	justNowMinutes: number;
@@ -46,14 +47,17 @@ function pad2(n: number): string {
 }
 
 /**
- * 按格式串渲染日期。占位符：
- * YYYY=4 位年  YY=2 位年  MM=月  M=月(不补零)  DD=日  D=日(不补零)
- * HH=时  mm=分  W=当月第几周（1-7 日 = 第 1 周，依此类推）
+ * Renders a date using a format string. Placeholders:
+ * YYYY=4-digit year  YY=2-digit year  MM=month  M=month (no leading zero)
+ * DD=day  D=day (no leading zero)  HH=hour  mm=minute  MMM=short month name
+ * W=week of the month (days 1-7 = week 1, and so on)
+ * Text wrapped in single quotes ('like this') is inserted literally.
  */
 export function renderDateFormat(format: string, d: Date): string {
 	const tokens: Record<string, string> = {
 		YYYY: String(d.getFullYear()),
 		YY: pad2(d.getFullYear() % 100),
+		MMM: activeMonthNames[d.getMonth()],
 		MM: pad2(d.getMonth() + 1),
 		M: String(d.getMonth() + 1),
 		DD: pad2(d.getDate()),
@@ -62,7 +66,10 @@ export function renderDateFormat(format: string, d: Date): string {
 		mm: pad2(d.getMinutes()),
 		W: String(Math.ceil(d.getDate() / 7)),
 	};
-	return format.replace(/YYYY|YY|MM|M|DD|D|HH|mm|W/g, (t) => tokens[t]);
+	return format.replace(/'([^']*)'|MMM|YYYY|YY|MM|M|DD|D|HH|mm|W/g, (match, literal) => {
+		if (literal !== undefined) return literal;
+		return tokens[match];
+	});
 }
 
 /** 本地日历日序号，用于计算“差几天”（按自然日而不是 24 小时）。 */
@@ -84,17 +91,17 @@ export function formatTimestamp(
 	const diffMin = Math.max(0, Math.floor((now.getTime() - d.getTime()) / 60000));
 
 	// 1. 刚刚
-	if (settings.justNowMinutes > 0 && diffMin < settings.justNowMinutes) return "刚刚";
+	if (settings.justNowMinutes > 0 && diffMin < settings.justNowMinutes) return t.justNow;
 
 	// 2. N 分钟前
 	if (settings.minutesAgoLimit > 0 && diffMin < settings.minutesAgoLimit) {
-		return `${diffMin} 分钟前`;
+		return t.minutesAgo(diffMin);
 	}
 
 	// 3. N 小时前
 	const diffHours = Math.floor(diffMin / 60);
 	if (settings.hoursAgoLimit > 0 && diffHours >= 1 && diffHours < settings.hoursAgoLimit) {
-		return `${diffHours} 小时前`;
+		return t.hoursAgo(diffHours);
 	}
 
 	const dayDiff = daySerial(now) - daySerial(d);
@@ -106,12 +113,12 @@ export function formatTimestamp(
 
 	// 5. 昨天 HH:mm
 	if (settings.yesterdayWithTime && dayDiff === 1) {
-		return `昨天 ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+		return t.yesterdayAt(`${pad2(d.getHours())}:${pad2(d.getMinutes())}`);
 	}
 
 	// 6. N 天前
 	if (settings.daysAgoLimit > 0 && dayDiff >= 1 && dayDiff <= settings.daysAgoLimit) {
-		return `${dayDiff} 天前`;
+		return t.daysAgo(dayDiff);
 	}
 
 	// 7. 今年 MM-DD
