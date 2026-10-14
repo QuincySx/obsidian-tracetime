@@ -4,6 +4,16 @@ on:
   push:
     tags:
       - "*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Tag version (leave empty to use package.json, e.g. 0.1.6)"
+        required: false
+        type: string
+
+concurrency:
+  group: tracetime-release
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -16,11 +26,54 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: "npm"
+
+      - name: Resolve release tag
+        id: release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          PUSH_TAG: ${{ github.ref_name }}
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
+          const pkg = read("package.json");
+          const lock = read("package-lock.json");
+          const manifest = read("manifest.json");
+          const versions = read("versions.json");
+          const tag = process.env.EVENT_NAME === "workflow_dispatch"
+            ? (process.env.INPUT_VERSION.trim() || pkg.version)
+            : process.env.PUSH_TAG;
+          if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(tag)) {
+            throw new Error("Use a version tag such as 0.1.6 (without a v prefix).");
+          }
+          if ([pkg.version, lock.version, lock.packages[""].version, manifest.version].some((version) => version !== tag)) {
+            throw new Error(`Tag ${tag} must match package.json, package-lock.json and manifest.json. Commit the version bump first.`);
+          }
+          if (versions[tag] !== manifest.minAppVersion) {
+            throw new Error(`versions.json must contain ${tag} with minAppVersion ${manifest.minAppVersion}.`);
+          }
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `tag=${tag}\n`);
+          NODE
+
+      - name: Check existing tag
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          if git show-ref --verify --quiet "refs/tags/$TAG"; then
+            if [ "$(git rev-parse "refs/tags/$TAG^{commit}")" != "$GITHUB_SHA" ]; then
+              echo "::error::Tag $TAG already points to another commit. Bump the repository version before releasing again."
+              exit 1
+            fi
+          fi
 
       - name: Test and build plugin
         run: |
@@ -39,13 +92,26 @@ jobs:
             manifest.json
             styles.css
 
+      # GITHUB_TOKEN tag pushes do not trigger another workflow. Continue with
+      # draft release creation in this run, without requiring an extra token.
+      - name: Create version tag
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          if ! git show-ref --verify --quiet "refs/tags/$TAG"; then
+            git tag "$TAG" "$GITHUB_SHA"
+            git push origin "refs/tags/$TAG"
+          fi
+
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release.outputs.tag }}
         run: |
-          tag="${GITHUB_REF#refs/tags/}"
-          gh release create "$tag" \
-            --title="$tag" \
+          gh release create "$TAG" \
+            --verify-tag \
+            --title="$TAG" \
             --draft \
             --generate-notes \
             main.js manifest.json styles.css

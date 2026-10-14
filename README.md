@@ -36,6 +36,12 @@ npm test       # core logic self-tests
 npm run pack   # package dist/tracetime-<version>.zip
 ```
 
+### Release
+
+Commit and push the version bump first (`npm version patch --no-git-tag-version` updates all version files). In GitHub, open **Actions → Release Obsidian plugin → Run workflow** and choose the branch to release. Leave **version** empty to use `package.json`, or enter that same version explicitly without a `v` prefix.
+
+The workflow validates the version files, runs tests and builds, then creates the tag and a **draft release** with the plugin files attached. Review the draft and publish it manually. Tags pushed from your terminal continue to use the same release workflow.
+
 ---
 
 # TraceTime（中文）
@@ -59,6 +65,12 @@ TraceTime 是一个 Obsidian 插件：为笔记中的**每个块**（段落、�
 ## License
 
 MIT
+
+## 发版
+
+先更新版本（`npm version patch --no-git-tag-version`），提交并推送代码。然后在 GitHub 打开 **Actions → Release Obsidian plugin → Run workflow**，选择要发布的分支；**version** 留空时读取 `package.json`，也可填写相同版本号（不加 `v` 前缀）。
+
+流程会校验版本信息，运行测试和构建，再创建 tag 和带插件文件的**草稿 Release**。检查草稿后手动发布即可。终端推送 tag 的方式仍然可用。
 
 
 ## Localization
